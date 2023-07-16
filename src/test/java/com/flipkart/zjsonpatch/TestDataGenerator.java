@@ -16,10 +16,8 @@
 
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,24 +37,24 @@ public class TestDataGenerator {
             "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
             "a", "b", "c", "d", "e", "f", "g", "h", "i", "j");
 
-    public static JsonNode generate(int count) {
-        ArrayNode jsonNode = JsonNodeFactory.instance.arrayNode();
+    public static JsonArray generate(int count) {
+        JsonArray jsonNode = new JsonArray();
         for (int i = 0; i < count; i++) {
-            ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+            JsonObject objectNode = new JsonObject();
             objectNode.put("name", name.get(random.nextInt(name.size())));
             objectNode.put("age", age.get(random.nextInt(age.size())));
             objectNode.put("gender", gender.get(random.nextInt(gender.size())));
-            ArrayNode countryNode = getArrayNode(country.subList(random.nextInt(country.size() / 2), (country.size() / 2) + random.nextInt(country.size() / 2)));
-            objectNode.set("country", countryNode);
-            ArrayNode friendNode = getArrayNode(friends.subList(random.nextInt(friends.size() / 2), (friends.size() / 2) + random.nextInt(friends.size() / 2)));
-            objectNode.set("friends", friendNode);
+            JsonArray countryNode = getArrayNode(country.subList(random.nextInt(country.size() / 2), (country.size() / 2) + random.nextInt(country.size() / 2)));
+            objectNode.put("country", countryNode);
+            JsonArray friendNode = getArrayNode(friends.subList(random.nextInt(friends.size() / 2), (friends.size() / 2) + random.nextInt(friends.size() / 2)));
+            objectNode.put("friends", friendNode);
             jsonNode.add(objectNode);
         }
         return jsonNode;
     }
 
-    private static ArrayNode getArrayNode(List<String> args) {
-        ArrayNode countryNode = JsonNodeFactory.instance.arrayNode();
+    private static JsonArray getArrayNode(List<String> args) {
+        JsonArray countryNode = new JsonArray();
         for(String arg : args){
             countryNode.add(arg);
         }

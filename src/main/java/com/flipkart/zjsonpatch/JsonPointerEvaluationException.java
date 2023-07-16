@@ -1,12 +1,10 @@
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 public class JsonPointerEvaluationException extends Exception {
     private final JsonPointer path;
-    private final JsonNode target;
+    private final Object target;
 
-    public JsonPointerEvaluationException(String message, JsonPointer path, JsonNode target) {
+    public JsonPointerEvaluationException(String message, JsonPointer path, Object target) {
         super(message);
         this.path = path;
         this.target = target;
@@ -16,7 +14,7 @@ public class JsonPointerEvaluationException extends Exception {
         return path;
     }
 
-    public JsonNode getTarget() {
+    public Object getTarget() {
         return target;
     }
 }

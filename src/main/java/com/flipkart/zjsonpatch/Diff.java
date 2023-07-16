@@ -16,8 +16,6 @@
 
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 /**
  * User: gopi.vishwakarma
  * Date: 30/07/14
@@ -25,11 +23,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 class Diff {
     private final Operation operation;
     private final JsonPointer path;
-    private final JsonNode value;
+    private final Object value;
     private JsonPointer toPath; //only to be used in move operation
-    private final JsonNode srcValue; // only used in replace operation
+    private final Object srcValue; // only used in replace operation
 
-    Diff(Operation operation, JsonPointer path, JsonNode value) {
+    Diff(Operation operation, JsonPointer path, Object value) {
         this.operation = operation;
         this.path = path;
         this.value = value;
@@ -44,7 +42,7 @@ class Diff {
         this.srcValue = null;
     }
     
-    Diff(Operation operation, JsonPointer path, JsonNode srcValue, JsonNode value) {
+    Diff(Operation operation, JsonPointer path, Object srcValue, Object value) {
         this.operation = operation;
         this.path = path;
         this.value = value;
@@ -59,15 +57,15 @@ class Diff {
         return path;
     }
 
-    public JsonNode getValue() {
+    public Object getValue() {
         return value;
     }
 
-    public static Diff generateDiff(Operation replace, JsonPointer path, JsonNode target) {
+    public static Diff generateDiff(Operation replace, JsonPointer path, Object target) {
         return new Diff(replace, path, target);
     }
     
-    public static Diff generateDiff(Operation replace, JsonPointer path, JsonNode source, JsonNode target) {
+    public static Diff generateDiff(Operation replace, JsonPointer path, Object source, Object target) {
         return new Diff(replace, path, source, target);
     }
 
@@ -75,7 +73,7 @@ class Diff {
         return toPath;
     }
     
-    public JsonNode getSrcValue(){
+    public Object getSrcValue(){
         return srcValue;
     }
 }

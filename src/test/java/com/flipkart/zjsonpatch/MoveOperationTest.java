@@ -16,8 +16,8 @@
 
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
 
@@ -32,31 +32,29 @@ import static org.junit.Assert.assertThat;
  */
 public class MoveOperationTest extends AbstractTest {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
     @Parameterized.Parameters
     public static Collection<PatchTestCase> data() throws IOException {
         return PatchTestCase.load("move");
     }
 
     @Test
-    public void testMoveValueGeneratedHasNoValue() throws IOException {
-        JsonNode jsonNode1 = MAPPER.readTree("{ \"foo\": { \"bar\": \"baz\", \"waldo\": \"fred\" }, \"qux\": { \"corge\": \"grault\" } }");
-        JsonNode jsonNode2 = MAPPER.readTree("{ \"foo\": { \"bar\": \"baz\" }, \"qux\": { \"corge\": \"grault\", \"thud\": \"fred\" } }");
-        JsonNode patch = MAPPER.readTree("[{\"op\":\"move\",\"from\":\"/foo/waldo\",\"path\":\"/qux/thud\"}]");
+    public void testMoveValueGeneratedHasNoValue() {
+        JsonObject jsonNode1 = new JsonObject("{ \"foo\": { \"bar\": \"baz\", \"waldo\": \"fred\" }, \"qux\": { \"corge\": \"grault\" } }");
+        JsonObject jsonNode2 = new JsonObject("{ \"foo\": { \"bar\": \"baz\" }, \"qux\": { \"corge\": \"grault\", \"thud\": \"fred\" } }");
+        JsonArray patch = new JsonArray("[{\"op\":\"move\",\"from\":\"/foo/waldo\",\"path\":\"/qux/thud\"}]");
 
-        JsonNode diff = JsonDiff.asJson(jsonNode1, jsonNode2);
+        JsonArray diff = JsonDiff.asJson(jsonNode1, jsonNode2);
 
         assertThat(diff, equalTo(patch));
     }
 
     @Test
-    public void testMoveArrayGeneratedHasNoValue() throws IOException {
-        JsonNode jsonNode1 = MAPPER.readTree("{ \"foo\": [ \"all\", \"grass\", \"cows\", \"eat\" ] }");
-        JsonNode jsonNode2 = MAPPER.readTree("{ \"foo\": [ \"all\", \"cows\", \"eat\", \"grass\" ] }");
-        JsonNode patch = MAPPER.readTree("[{\"op\":\"move\",\"from\":\"/foo/1\",\"path\":\"/foo/3\"}]");
+    public void testMoveArrayGeneratedHasNoValue() {
+        JsonObject jsonNode1 = new JsonObject("{ \"foo\": [ \"all\", \"grass\", \"cows\", \"eat\" ] }");
+        JsonObject jsonNode2 = new JsonObject("{ \"foo\": [ \"all\", \"cows\", \"eat\", \"grass\" ] }");
+        JsonArray patch = new JsonArray("[{\"op\":\"move\",\"from\":\"/foo/1\",\"path\":\"/foo/3\"}]");
 
-        JsonNode diff = JsonDiff.asJson(jsonNode1, jsonNode2);
+        JsonArray diff = JsonDiff.asJson(jsonNode1, jsonNode2);
 
         assertThat(diff, equalTo(patch));
     }

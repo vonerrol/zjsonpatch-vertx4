@@ -16,8 +16,8 @@
 
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,27 +30,25 @@ import static org.junit.Assert.assertThat;
 
 public class CompatibilityTest {
 
-    ObjectMapper mapper;
-    JsonNode addNodeWithMissingValue;
-    JsonNode replaceNodeWithMissingValue;
-    JsonNode removeNoneExistingArrayElement;
-    JsonNode replaceNode;
-    JsonNode removeNode;
+    JsonArray addNodeWithMissingValue;
+    JsonArray replaceNodeWithMissingValue;
+    JsonArray removeNoneExistingArrayElement;
+    JsonArray replaceNode;
+    JsonArray removeNode;
 
     @Before
     public void setUp() throws Exception {
-        mapper = new ObjectMapper();
-        addNodeWithMissingValue = mapper.readTree("[{\"op\":\"add\",\"path\":\"/a\"}]");
-        replaceNodeWithMissingValue = mapper.readTree("[{\"op\":\"replace\",\"path\":\"/a\"}]");
-        removeNoneExistingArrayElement = mapper.readTree("[{\"op\": \"remove\",\"path\": \"/b/0\"}]");
-        replaceNode = mapper.readTree("[{\"op\":\"replace\",\"path\":\"/a\",\"value\":true}]");
-        removeNode = mapper.readTree("[{\"op\":\"remove\",\"path\":\"/b\"}]");
+        addNodeWithMissingValue = new JsonArray("[{\"op\":\"add\",\"path\":\"/a\"}]");
+        replaceNodeWithMissingValue = new JsonArray("[{\"op\":\"replace\",\"path\":\"/a\"}]");
+        removeNoneExistingArrayElement = new JsonArray("[{\"op\": \"remove\",\"path\": \"/b/0\"}]");
+        replaceNode = new JsonArray("[{\"op\":\"replace\",\"path\":\"/a\",\"value\":true}]");
+        removeNode = new JsonArray("[{\"op\":\"remove\",\"path\":\"/b\"}]");
     }
 
     @Test
     public void withFlagAddShouldTreatMissingValuesAsNulls() throws IOException {
-        JsonNode expected = mapper.readTree("{\"a\":null}");
-        JsonNode result = JsonPatch.apply(addNodeWithMissingValue, mapper.createObjectNode(), EnumSet.of(MISSING_VALUES_AS_NULLS));
+        JsonObject expected = new JsonObject("{\"a\":null}");
+        JsonObject result = (JsonObject) JsonPatch.apply(addNodeWithMissingValue, new JsonObject(), EnumSet.of(MISSING_VALUES_AS_NULLS));
         assertThat(result, equalTo(expected));
     }
 
@@ -61,9 +59,9 @@ public class CompatibilityTest {
 
     @Test
     public void withFlagReplaceShouldTreatMissingValuesAsNull() throws IOException {
-        JsonNode source = mapper.readTree("{\"a\":\"test\"}");
-        JsonNode expected = mapper.readTree("{\"a\":null}");
-        JsonNode result = JsonPatch.apply(replaceNodeWithMissingValue, source, EnumSet.of(MISSING_VALUES_AS_NULLS));
+        JsonObject source = new JsonObject("{\"a\":\"test\"}");
+        JsonObject expected = new JsonObject("{\"a\":null}");
+        JsonObject result = (JsonObject) JsonPatch.apply(replaceNodeWithMissingValue, source, EnumSet.of(MISSING_VALUES_AS_NULLS));
         assertThat(result, equalTo(expected));
     }
 
@@ -74,30 +72,30 @@ public class CompatibilityTest {
 
     @Test
     public void withFlagIgnoreRemoveNoneExistingArrayElement() throws IOException {
-        JsonNode source = mapper.readTree("{\"b\": []}");
-        JsonNode expected = mapper.readTree("{\"b\": []}");
-        JsonNode result = JsonPatch.apply(removeNoneExistingArrayElement, source, EnumSet.of(REMOVE_NONE_EXISTING_ARRAY_ELEMENT));
+        JsonObject source = new JsonObject("{\"b\": []}");
+        JsonObject expected = new JsonObject("{\"b\": []}");
+        JsonObject result = (JsonObject) JsonPatch.apply(removeNoneExistingArrayElement, source, EnumSet.of(REMOVE_NONE_EXISTING_ARRAY_ELEMENT));
         assertThat(result, equalTo(expected));
     }
 
     @Test
     public void withFlagReplaceShouldAddValueWhenMissingInTarget() throws Exception {
-        JsonNode expected = mapper.readTree("{\"a\": true}");
-        JsonNode result = JsonPatch.apply(replaceNode, mapper.createObjectNode(), EnumSet.of(ALLOW_MISSING_TARGET_OBJECT_ON_REPLACE));
+        JsonObject expected = new JsonObject("{\"a\": true}");
+        JsonObject result = (JsonObject) JsonPatch.apply(replaceNode, new JsonObject(), EnumSet.of(ALLOW_MISSING_TARGET_OBJECT_ON_REPLACE));
         assertThat(result, equalTo(expected));
     }
 
     @Test(expected = JsonPatchApplicationException.class)
     public void withFlagRemoveMissingValueShouldThrow() throws Exception {
-        JsonNode source = mapper.readTree("{\"a\": true}");
+        JsonObject source = new JsonObject("{\"a\": true}");
         JsonPatch.apply(removeNode, source, EnumSet.of(FORBID_REMOVE_MISSING_OBJECT));
     }
 
     @Test
     public void withFlagRemoveShouldRemove() throws Exception {
-        JsonNode source = mapper.readTree("{\"b\": true}");
-        JsonNode expected = mapper.readTree("{}");
-        JsonNode result = JsonPatch.apply(removeNode, source, EnumSet.of(FORBID_REMOVE_MISSING_OBJECT));
+        JsonObject source = new JsonObject("{\"b\": true}");
+        JsonObject expected = new JsonObject("{}");
+        JsonObject result = (JsonObject) JsonPatch.apply(removeNode, source, EnumSet.of(FORBID_REMOVE_MISSING_OBJECT));
         assertThat(result, equalTo(expected));
     }
 }

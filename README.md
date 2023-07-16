@@ -1,9 +1,12 @@
-[![CircleCI](https://circleci.com/gh/flipkart-incubator/zjsonpatch/tree/master.svg?style=svg)](https://circleci.com/gh/flipkart-incubator/zjsonpatch/tree/master) [![Join the chat at https://gitter.im/zjsonpatch/community](https://badges.gitter.im/zjsonpatch/community.svg)](https://gitter.im/zjsonpatch/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
+<!-- [![CircleCI](https://circleci.com/???/tree/master.svg?style=svg)](https://circleci.com/???/tree/master) --> 
+
+Forked from [zjsonpatch](https://github.com/flipkart-incubator/zjsonpatch) to support [Vertx v4 JSON API](https://vertx.io/docs/vertx-core/java/#_json)
 
 # This is an implementation of  [RFC 6902 JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) written in Java.
 
 ## Description & Use-Cases
 - Java Library to find / apply JSON Patches according to [RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902).
+- Adapted to work with [Vertx v4 JSON API](https://vertx.io/docs/vertx-core/java/#_json).
 - JSON Patch defines a JSON document structure for representing changes to a JSON document.
 - It can be used to avoid sending a whole document when only a part has changed, thus reducing network bandwidth requirements if data (in JSON format) is required to send across multiple systems over network or in case of multi DC transfer.
 - When used in combination with the HTTP PATCH method as per [RFC 5789 HTTP PATCH](https://datatracker.ietf.org/doc/html/rfc5789), it will do partial updates for HTTP APIs in a standard  way.
@@ -12,9 +15,9 @@
 ### Compatible with : Java 7+ versions
 
 ## Code Coverage
-Package      |	Class, % 	 |  Method, % 	   |  Line, %           |
--------------|---------------|-----------------|--------------------|
-all classes  |	100% (6/ 6)  |	93.6% (44/ 47) |  96.2% (332/ 345)  |
+| Package     | 	Class, % 	    | Method, % 	     | Line, %        |
+|-------------|----------------|-----------------|----------------|
+| all classes | 	100% (19/ 19) | 	89% (115/ 129) | 92% (592/ 639) |
 
 ## Complexity
 - To find JsonPatch : Ω(N+M) ,N and M represents number of keys in first and second json respectively / O(summation of la*lb) where la , lb represents JSON array of length la / lb of against same key in first and second JSON ,since LCS is used to find difference between 2 JSON arrays there of order of quadratic.
@@ -28,17 +31,17 @@ all classes  |	100% (6/ 6)  |	93.6% (44/ 47) |  96.2% (332/ 345)  |
 Add following to `<dependencies/>` section of your pom.xml -
 
 ```xml
-<groupId>com.flipkart.zjsonpatch</groupId>
-<artifactId>zjsonpatch</artifactId>
+<groupId>com.vonerrol.zjsonpatch-vertx4</groupId>
+<artifactId>zjsonpatch-vertx4</artifactId>
 <version>{version}</version>
 ```
-- Available on [maven central repository](http://search.maven.org/#search%7Cga%7C1%7Cg%3Acom.flipkart.zjsonpatch%20a%3Azjsonpatch)
+<!-- [Replace URL with correct one:] - Available on [maven central repository](http://search.maven.org/#search%7Cga%7C1%7Cg%3Acom.flipkart.zjsonpatch%20a%3Azjsonpatch) -->
 
 ## API Usage
 
 ### Obtaining JSON Diff as patch
-```xml
-JsonNode patch = JsonDiff.asJson(JsonNode source, JsonNode target)
+```java
+JsonArray patch = JsonDiff.asJson(Object source, Object target)
 ```
 Computes and returns a JSON `patch` from `source`  to `target`,
 Both `source` and `target` must be either valid JSON objects or arrays or values. 
@@ -52,15 +55,15 @@ The algorithm which computes this JsonPatch currently generates following operat
  - `copy`
 
 ### Apply Json Patch
-```xml
-JsonNode target = JsonPatch.apply(JsonNode patch, JsonNode source);
+```java
+Object target = JsonPatch.apply(JsonArray patch, Object source);
 ```
 Given a `patch`, it apply it to `source` JSON and return a `target` JSON which can be ( JSON object or array or value ). This operation  performed on a clone of `source` JSON ( thus, the `source` JSON is unmodified and can be used further). 
 
 ## To turn off MOVE & COPY Operations
-```xml
+```java
 EnumSet<DiffFlags> flags = DiffFlags.dontNormalizeOpIntoMoveAndCopy().clone()
-JsonNode patch = JsonDiff.asJson(JsonNode source, JsonNode target, flags)
+JsonArray patch = JsonDiff.asJson(Object source, Object target, flags)
 ```
 
 ### Example
@@ -80,8 +83,8 @@ Following patch will be returned:
 here `"op"` specifies the operation (`"move"`), `"from"` specifies the path from where the value should be moved, and  `"path"` specifies where value should be moved. The value that is moved is taken as the content at the `"from"` path.
 
 ### Apply Json Patch In-Place
-```xml
-JsonPatch.applyInPlace(JsonNode patch, JsonNode source);
+```java
+JsonPatch.applyInPlace(JsonArray patch, Object source);
 ```
 Given a `patch`, it will apply it to the `source` JSON mutating the instance, opposed to `JsonPatch.apply` which returns 
 a new instance with the patch applied, leaving the `source` unchanged.

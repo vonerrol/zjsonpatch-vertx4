@@ -1,7 +1,7 @@
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -148,21 +148,20 @@ public class JsonPointerTest {
     public void evaluatesAccordingToRFC6901() throws IOException, JsonPointerEvaluationException {
         // Tests resolution according to https://tools.ietf.org/html/rfc6901#section-5
 
-        ObjectMapper om = TestUtils.DEFAULT_MAPPER;
-        JsonNode data = TestUtils.loadResourceAsJsonNode("/rfc6901/data.json");
-        JsonNode testData = data.get("testData");
+        JsonObject data = new JsonObject(TestUtils.loadFromResources("/rfc6901/data.json"));
+        JsonObject testData = data.getJsonObject("testData");
 
-        assertEquals(om.readTree("[\"bar\", \"baz\"]"), JsonPointer.parse("/foo").evaluate(testData));
-        assertEquals(om.readTree("\"bar\""), JsonPointer.parse("/foo/0").evaluate(testData));
-        assertEquals(om.readTree("0"), JsonPointer.parse("/").evaluate(testData));
-        assertEquals(om.readTree("1"), JsonPointer.parse("/a~1b").evaluate(testData));
-        assertEquals(om.readTree("2"), JsonPointer.parse("/c%d").evaluate(testData));
-        assertEquals(om.readTree("3"), JsonPointer.parse("/e^f").evaluate(testData));
-        assertEquals(om.readTree("4"), JsonPointer.parse("/g|h").evaluate(testData));
-        assertEquals(om.readTree("5"), JsonPointer.parse("/i\\j").evaluate(testData));
-        assertEquals(om.readTree("6"), JsonPointer.parse("/k\"l").evaluate(testData));
-        assertEquals(om.readTree("7"), JsonPointer.parse("/ ").evaluate(testData));
-        assertEquals(om.readTree("8"), JsonPointer.parse("/m~0n").evaluate(testData));
+        assertEquals(new JsonArray("[\"bar\", \"baz\"]"), JsonPointer.parse("/foo").evaluate(testData));
+        assertEquals("bar", JsonPointer.parse("/foo/0").evaluate(testData));
+        assertEquals(0, JsonPointer.parse("/").evaluate(testData));
+        assertEquals(1, JsonPointer.parse("/a~1b").evaluate(testData));
+        assertEquals(2, JsonPointer.parse("/c%d").evaluate(testData));
+        assertEquals(3, JsonPointer.parse("/e^f").evaluate(testData));
+        assertEquals(4, JsonPointer.parse("/g|h").evaluate(testData));
+        assertEquals(5, JsonPointer.parse("/i\\j").evaluate(testData));
+        assertEquals(6, JsonPointer.parse("/k\"l").evaluate(testData));
+        assertEquals(7, JsonPointer.parse("/ ").evaluate(testData));
+        assertEquals(8, JsonPointer.parse("/m~0n").evaluate(testData));
     }
 
     // Utility methods --

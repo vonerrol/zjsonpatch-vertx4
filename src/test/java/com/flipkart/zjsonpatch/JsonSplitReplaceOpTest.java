@@ -1,8 +1,7 @@
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import java.util.EnumSet;
@@ -14,82 +13,80 @@ import static org.junit.Assert.assertEquals;
  */
 public class JsonSplitReplaceOpTest {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     @Test
-    public void testJsonDiffSplitsReplaceIntoAddAndRemoveOperationWhenFlagIsAdded() throws JsonProcessingException {
+    public void testJsonDiffSplitsReplaceIntoAddAndRemoveOperationWhenFlagIsAdded() {
         String source = "{ \"ids\": [ \"F1\", \"F3\" ] }";
         String target = "{ \"ids\": [ \"F1\", \"F6\", \"F4\" ] }";
-        JsonNode sourceNode = OBJECT_MAPPER.reader().readTree(source);
-        JsonNode targetNode = OBJECT_MAPPER.reader().readTree(target);
+        JsonObject sourceNode = new JsonObject(source);
+        JsonObject targetNode = new JsonObject(target);
 
-        JsonNode diff = JsonDiff.asJson(sourceNode, targetNode, EnumSet.of(
+        JsonArray diff = JsonDiff.asJson(sourceNode, targetNode, EnumSet.of(
                 DiffFlags.ADD_EXPLICIT_REMOVE_ADD_ON_REPLACE
         ));
         assertEquals(3, diff.size());
-        assertEquals(Operation.REMOVE.rfcName(), diff.get(0).get("op").textValue());
-        assertEquals("/ids/1", diff.get(0).get("path").textValue());
-        assertEquals("F3", diff.get(0).get("value").textValue());
+        assertEquals(Operation.REMOVE.rfcName(), diff.getJsonObject(0).getString("op"));
+        assertEquals("/ids/1", diff.getJsonObject(0).getString("path"));
+        assertEquals("F3", diff.getJsonObject(0).getString("value"));
 
-        assertEquals(Operation.ADD.rfcName(), diff.get(1).get("op").textValue());
-        assertEquals("/ids/1", diff.get(1).get("path").textValue());
-        assertEquals("F6", diff.get(1).get("value").textValue());
+        assertEquals(Operation.ADD.rfcName(), diff.getJsonObject(1).getString("op"));
+        assertEquals("/ids/1", diff.getJsonObject(1).getString("path"));
+        assertEquals("F6", diff.getJsonObject(1).getString("value"));
 
-        assertEquals(Operation.ADD.rfcName(), diff.get(2).get("op").textValue());
-        assertEquals("/ids/2", diff.get(2).get("path").textValue());
-        assertEquals("F4", diff.get(2).get("value").textValue());
+        assertEquals(Operation.ADD.rfcName(), diff.getJsonObject(2).getString("op"));
+        assertEquals("/ids/2", diff.getJsonObject(2).getString("path"));
+        assertEquals("F4", diff.getJsonObject(2).getString("value"));
     }
 
     @Test
-    public void testJsonDiffDoesNotSplitReplaceIntoAddAndRemoveOperationWhenFlagIsNotAdded() throws JsonProcessingException {
+    public void testJsonDiffDoesNotSplitReplaceIntoAddAndRemoveOperationWhenFlagIsNotAdded() {
         String source = "{ \"ids\": [ \"F1\", \"F3\" ] }";
         String target = "{ \"ids\": [ \"F1\", \"F6\", \"F4\" ] }";
-        JsonNode sourceNode = OBJECT_MAPPER.reader().readTree(source);
-        JsonNode targetNode = OBJECT_MAPPER.reader().readTree(target);
+        JsonObject sourceNode = new JsonObject(source);
+        JsonObject targetNode = new JsonObject(target);
 
-        JsonNode diff = JsonDiff.asJson(sourceNode, targetNode);
+        JsonArray diff = JsonDiff.asJson(sourceNode, targetNode);
         System.out.println(diff);
         assertEquals(2, diff.size());
-        assertEquals(Operation.REPLACE.rfcName(), diff.get(0).get("op").textValue());
-        assertEquals("/ids/1", diff.get(0).get("path").textValue());
-        assertEquals("F6", diff.get(0).get("value").textValue());
+        assertEquals(Operation.REPLACE.rfcName(), diff.getJsonObject(0).getString("op"));
+        assertEquals("/ids/1", diff.getJsonObject(0).getString("path"));
+        assertEquals("F6", diff.getJsonObject(0).getString("value"));
 
-        assertEquals(Operation.ADD.rfcName(), diff.get(1).get("op").textValue());
-        assertEquals("/ids/2", diff.get(1).get("path").textValue());
-        assertEquals("F4", diff.get(1).get("value").textValue());
+        assertEquals(Operation.ADD.rfcName(), diff.getJsonObject(1).getString("op"));
+        assertEquals("/ids/2", diff.getJsonObject(1).getString("path"));
+        assertEquals("F4", diff.getJsonObject(1).getString("value"));
     }
 
     @Test
-    public void testJsonDiffDoesNotSplitsWhenThereIsNoReplaceOperationButOnlyRemove() throws JsonProcessingException {
+    public void testJsonDiffDoesNotSplitsWhenThereIsNoReplaceOperationButOnlyRemove() {
         String source = "{ \"ids\": [ \"F1\", \"F3\" ] }";
         String target = "{ \"ids\": [ \"F3\"] }";
 
-        JsonNode sourceNode = OBJECT_MAPPER.reader().readTree(source);
-        JsonNode targetNode = OBJECT_MAPPER.reader().readTree(target);
+        JsonObject sourceNode = new JsonObject(source);
+        JsonObject targetNode = new JsonObject(target);
 
-        JsonNode diff = JsonDiff.asJson(sourceNode, targetNode, EnumSet.of(
+        JsonArray diff = JsonDiff.asJson(sourceNode, targetNode, EnumSet.of(
                 DiffFlags.ADD_EXPLICIT_REMOVE_ADD_ON_REPLACE
         ));
         assertEquals(1, diff.size());
-        assertEquals(Operation.REMOVE.rfcName(), diff.get(0).get("op").textValue());
-        assertEquals("/ids/0", diff.get(0).get("path").textValue());
-        assertEquals("F1", diff.get(0).get("value").textValue());
+        assertEquals(Operation.REMOVE.rfcName(), diff.getJsonObject(0).getString("op"));
+        assertEquals("/ids/0", diff.getJsonObject(0).getString("path"));
+        assertEquals("F1", diff.getJsonObject(0).getString("value"));
     }
 
     @Test
-    public void testJsonDiffDoesNotSplitsWhenThereIsNoReplaceOperationButOnlyAdd() throws JsonProcessingException {
+    public void testJsonDiffDoesNotSplitsWhenThereIsNoReplaceOperationButOnlyAdd() {
         String source = "{ \"ids\": [ \"F1\" ] }";
         String target = "{ \"ids\": [ \"F1\", \"F6\"] }";
 
-        JsonNode sourceNode = OBJECT_MAPPER.reader().readTree(source);
-        JsonNode targetNode = OBJECT_MAPPER.reader().readTree(target);
+        JsonObject sourceNode = new JsonObject(source);
+        JsonObject targetNode = new JsonObject(target);
 
-        JsonNode diff = JsonDiff.asJson(sourceNode, targetNode, EnumSet.of(
+        JsonArray diff = JsonDiff.asJson(sourceNode, targetNode, EnumSet.of(
                 DiffFlags.ADD_EXPLICIT_REMOVE_ADD_ON_REPLACE
         ));
         assertEquals(1, diff.size());
-        assertEquals(Operation.ADD.rfcName(), diff.get(0).get("op").textValue());
-        assertEquals("/ids/1", diff.get(0).get("path").textValue());
-        assertEquals("F6", diff.get(0).get("value").textValue());
+        assertEquals(Operation.ADD.rfcName(), diff.getJsonObject(0).getString("op"));
+        assertEquals("/ids/1", diff.getJsonObject(0).getString("path"));
+        assertEquals("F6", diff.getJsonObject(0).getString("value"));
     }
 }

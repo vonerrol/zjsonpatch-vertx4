@@ -16,9 +16,8 @@
 
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +27,6 @@ import org.junit.runners.Parameterized.Parameter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
@@ -55,14 +53,14 @@ public abstract class AbstractTest {
     }
 
     private void testOperation() throws Exception {
-        JsonNode node = p.getNode();
+        JsonObject node = p.getNode();
 
-        JsonNode doc = node.get("node");
-        JsonNode expected = node.get("expected");
-        JsonNode patch = node.get("op");
-        String message = node.has("message") ? node.get("message").toString() : "";
+        Object doc = node.getValue("node");
+        Object expected = node.getValue("expected");
+        JsonArray patch = node.getJsonArray("op");
+        String message = node.containsKey("message") ? node.getString("message") : "";
 
-        JsonNode result = JsonPatch.apply(patch, doc);
+        Object result = JsonPatch.apply(patch, doc);
         String failMessage = "The following test failed: \n" +
                 "message: " + message + '\n' +
                 "at: " + p.getSourceFile();
@@ -73,17 +71,17 @@ public abstract class AbstractTest {
         return Class.forName(type.contains(".") ? type : "com.flipkart.zjsonpatch." + type);
     }
 
-    private String errorMessage(String header) throws JsonProcessingException {
+    private String errorMessage(String header) {
         return errorMessage(header, null);
     }
-    private String errorMessage(String header, Exception e) throws JsonProcessingException {
+    private String errorMessage(String header, Exception e) {
         StringBuilder res =
                 new StringBuilder()
                         .append(header)
                         .append("\nFull test case (in file ")
                         .append(p.getSourceFile())
                         .append("):\n")
-                        .append(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(p.getNode()));
+                        .append(p.getNode().encodePrettily());
         if (e != null) {
             res.append("\nFull error: ");
             e.printStackTrace(new PrintWriter(new StringBuilderWriter(res)));
@@ -91,13 +89,13 @@ public abstract class AbstractTest {
         return res.toString();
     }
 
-    private void testError() throws JsonProcessingException, ClassNotFoundException {
-        JsonNode node = p.getNode();
-        JsonNode first = node.get("node");
-        JsonNode patch = node.get("op");
-        JsonNode message = node.get("message");
+    private void testError() throws ClassNotFoundException {
+        JsonObject node = p.getNode();
+        Object first = node.getValue("node");
+        JsonArray patch = node.getJsonArray("op");
+        String message = node.getString("message");
         Class<?> type =
-                node.has("type") ? exceptionType(node.get("type").textValue()) : JsonPatchApplicationException.class;
+                node.containsKey("type") ? exceptionType(node.getString("type")) : JsonPatchApplicationException.class;
 
         try {
             JsonPatch.apply(patch, first);
@@ -116,7 +114,7 @@ public abstract class AbstractTest {
                     assertThat(
                             errorMessage("Operation failed but with wrong message", e),
                             e.toString(),
-                            containsString(message.textValue()));    // equalTo would be better, but fail existing tests
+                            containsString(message));    // equalTo would be better, but fail existing tests
                 }
             }
         }

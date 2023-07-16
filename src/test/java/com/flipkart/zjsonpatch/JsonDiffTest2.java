@@ -16,9 +16,7 @@
 
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.vertx.core.json.JsonArray;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -33,26 +31,25 @@ import static org.hamcrest.core.IsEqual.equalTo;
  * @author ctranxuan (streamdata.io).
  */
 public class JsonDiffTest2 {
-    private static ObjectMapper objectMapper = new ObjectMapper();
-    private static ArrayNode jsonNode;
+    private static JsonArray jsonNode;
 
     @BeforeClass
     public static void beforeClass() throws IOException {
         String path = "/testdata/diff.json";
         InputStream resourceAsStream = JsonDiffTest.class.getResourceAsStream(path);
         String testData = IOUtils.toString(resourceAsStream, "UTF-8");
-        jsonNode = (ArrayNode) objectMapper.readTree(testData);
+        jsonNode = new JsonArray(testData);
     }
 
     @Test
     public void testPatchAppliedCleanly() {
         for (int i = 0; i < jsonNode.size(); i++) {
-            JsonNode first = jsonNode.get(i).get("first");
-            JsonNode second = jsonNode.get(i).get("second");
-            JsonNode patch = jsonNode.get(i).get("patch");
-            String message = jsonNode.get(i).get("message").toString();
+            Object first = jsonNode.getJsonObject(i).getValue("first");
+            Object second = jsonNode.getJsonObject(i).getValue("second");
+            JsonArray patch = jsonNode.getJsonObject(i).getJsonArray("patch");
+            String message = jsonNode.getJsonObject(i).getString("message");
 
-            JsonNode secondPrime = JsonPatch.apply(patch, first);
+            Object secondPrime = JsonPatch.apply(patch, first);
 
             Assert.assertThat(message, secondPrime, equalTo(second));
         }

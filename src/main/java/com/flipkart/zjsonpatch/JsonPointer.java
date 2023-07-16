@@ -1,7 +1,7 @@
 package com.flipkart.zjsonpatch;
 
-
-import com.fasterxml.jackson.databind.JsonNode;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,8 +21,8 @@ import java.util.regex.Pattern;
  * <pre>
  *      // Parse, build or render a JSON pointer
  *      String path = "/a/0/b/1";
- *      JsonPointer ptr1 = JsonPointer.{@link #parse}(path);
- *      JsonPointer ptr2 = JsonPointer.{@link #ROOT}.append("a").append(0).append("b").append(1);
+ *      JsonPatchJsonPointer ptr1 = JsonPatchJsonPointer.{@link #parse}(path);
+ *      JsonPatchJsonPointer ptr2 = JsonPatchJsonPointer.{@link #ROOT}.append("a").append(0).append("b").append(1);
  *      assert(ptr1.equals(ptr2));
  *      assert(path.equals(ptr1.toString()));
  *      assert(path.equals(ptr2.toString()));
@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  *      // Evaluate a JSON pointer against a live document
  *      ObjectMapper om = new ObjectMapper();
  *      JsonNode doc = om.readTree("{\"foo\":[\"bar\", \"baz\"]}");
- *      JsonNode baz = JsonPointer.parse("/foo/1").{@link #evaluate(JsonNode) evaluate}(doc);
+ *      JsonNode baz = JsonPatchJsonPointer.parse("/foo/1").{@link #evaluate(Object) evaluate}(doc);
  *      assert(baz.textValue().equals("baz"));
  * </pre>
  *
@@ -202,7 +202,7 @@ class JsonPointer {
         return isRoot() ? this : new JsonPointer(Arrays.copyOf(tokens, tokens.length - 1));
     }
 
-    private void error(int atToken, String message, JsonNode document) throws JsonPointerEvaluationException {
+    private void error(int atToken, String message, Object document) throws JsonPointerEvaluationException {
         throw new JsonPointerEvaluationException(
                 message,
                 new JsonPointer(Arrays.copyOf(tokens, atToken)),
@@ -216,26 +216,28 @@ class JsonPointer {
      * <a href="https://tools.ietf.org/html/rfc6901#section-4">RFC 6901 sectino 4</a>.
      *
      * @param document The target document against which to evaluate the JSON pointer.
-     * @return The {@link JsonNode} resolved by evaluating this JSON pointer.
+     * @return The {@link Object} resolved by evaluating this JSON pointer.
      * @throws JsonPointerEvaluationException The pointer could not be evaluated.
      */
-    public JsonNode evaluate(final JsonNode document) throws JsonPointerEvaluationException {
-        JsonNode current = document;
+    public Object evaluate(final Object document) throws JsonPointerEvaluationException {
+        Object current = document;
 
         for (int idx = 0; idx < tokens.length; ++idx) {
             final RefToken token = tokens[idx];
 
-            if (current.isArray()) {
+            if (JsonType.of(current).isArray()) {
+                JsonArray currentArray = (JsonArray) current;
                 if (!token.isArrayIndex())
                     error(idx, "Can't reference field \"" + token.getField() + "\" on array", document);
-                if (token.getIndex() == LAST_INDEX || token.getIndex() >= current.size())
+                if (token.getIndex() == LAST_INDEX || token.getIndex() >= currentArray.size())
                     error(idx, "Array index " + token.toString() + " is out of bounds", document);
-                current = current.get(token.getIndex());
+                current = currentArray.getValue(token.getIndex());
             }
-            else if (current.isObject()) {
-                if (!current.has(token.getField()))
+            else if (JsonType.of(current).isObject()) {
+                JsonObject currentObject = (JsonObject) current;
+                if (!currentObject.containsKey(token.getField()))
                     error(idx,"Missing field \"" + token.getField() + "\"", document);
-                current = current.get(token.getField());
+                current = currentObject.getValue(token.getField());
             }
             else
                 error(idx, "Can't reference past scalar value", document);

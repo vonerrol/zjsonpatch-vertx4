@@ -16,8 +16,6 @@
 
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 /**
  * A JSON patch processor that does nothing, intended for testing and validation.
  */
@@ -28,10 +26,10 @@ public class NoopProcessor implements JsonPatchProcessor {
     }
 
     @Override public void remove(JsonPointer path) {}
-    @Override public void replace(JsonPointer path, JsonNode value) {}
-    @Override public void add(JsonPointer path, JsonNode value) {}
+    @Override public void replace(JsonPointer path, Object value) {}
+    @Override public void add(JsonPointer path, Object value) {}
     @Override public void move(JsonPointer fromPath, JsonPointer toPath) {}
     @Override public void copy(JsonPointer fromPath, JsonPointer toPath) {}
-    @Override public void test(JsonPointer path, JsonNode value) {}
+    @Override public void test(JsonPointer path, Object value) {}
 
 }

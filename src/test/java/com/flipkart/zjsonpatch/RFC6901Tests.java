@@ -1,7 +1,7 @@
 package com.flipkart.zjsonpatch;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -11,12 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class RFC6901Tests {
     @Test
     void testRFC6901Compliance() throws IOException {
-        JsonNode data = TestUtils.loadResourceAsJsonNode("/rfc6901/data.json");
-        JsonNode testData = data.get("testData");
+        JsonObject data = new JsonObject(TestUtils.loadFromResources("/rfc6901/data.json"));
+        JsonObject testData = data.getJsonObject("testData");
 
-        ObjectNode emptyJson = TestUtils.DEFAULT_MAPPER.createObjectNode();
-        JsonNode patch = JsonDiff.asJson(emptyJson, testData);
-        JsonNode result = JsonPatch.apply(patch, emptyJson);
+        JsonObject emptyJson = new JsonObject();
+        JsonArray patch = JsonDiff.asJson(emptyJson, testData);
+        Object result = JsonPatch.apply(patch, emptyJson);
         assertEquals(testData, result);
     }
 }
